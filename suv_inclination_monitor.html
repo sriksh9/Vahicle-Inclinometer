@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUV Inclination Monitor Pro</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+        h1 {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: #e0e0e0;
+            text-align: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+            box-sizing: border-box;
+        }
+        
+        /* Visual Display Grid */
+        .visual-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .view-box {
+            background: #262626;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 180px;
+            border: 2px solid transparent;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+        .view-box.warning {
+            border-color: #ff5252;
+            background-color: #2c1a1a;
+        }
+        .view-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+        .graphic-container {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        /* Interactive SVG styles */
+        svg {
+            width: 110px;
+            height: auto;
+            transition: transform 0.1s ease-out;
+            filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.3));
+        }
+        svg path, svg rect {
+            transition: fill 0.2s;
+        }
+        .warning svg path {
+            fill: #ff5252 !important;
+        }
+
+        /* Value readout block */
+        .readouts {
+            display: flex;
+            justify-content: space-around;
+            background: #2a2a2a;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .data-point {
+            text-align: center;
+        }
+        .data-label {
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        .data-value {
+            font-family: monospace;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #4caf50;
+            margin-top: 4px;
+            transition: color 0.2s;
+        }
+        .data-value.danger {
+            color: #ff5252;
+        }
+        
+        /* Calibration UI Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .btn-calibrate {
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(33, 150, 243, 0.4);
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .btn-calibrate:active {
+            background-color: #0b7dda;
+            transform: scale(0.98);
+        }
+
+        .status {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>SUV Inclination Tracker</h1>
+
+    <div class="container">
+        
+        <!-- Dual Profile Graphics -->
+        <div class="visual-display">
+            <!-- Side Profile View -->
+            <div id="box-side" class="view-box">
+                <div class="view-title">PITCH (Front/Back)</div>
+                <div class="graphic-container">
+                    <svg id="suv-side" viewBox="0 0 100 45">
+                        <path d="M5,32 L12,32 A7,7 0 0,1 26,32 L74,32 A7,7 0 0,1 88,32 L95,32 L95,24 L88,18 L55,16 L38,16 L22,22 L10,24 L5,28 Z" fill="#ffffff" />
+                        <line x1="28" y1="14" x2="82" y2="14" stroke="#777" stroke-width="2" stroke-linecap="round" />
+                        <line x1="38" y1="14" x2="38" y2="16" stroke="#777" stroke-width="1.5" />
+                        <line x1="72" y1="14" x2="72" y2="16" stroke="#777" stroke-width="1.5" />
+                        <path d="M25,22 L38,18 L53,18 L53,24 L25,24 Z M56,18 L70,18 L82,23 L82,24 L56,24 Z" fill="#262626" />
+                        <circle cx="19" cy="32" r="6" fill="#121212" stroke="#888" stroke-width="2" />
+                        <circle cx="81" cy="32" r="6" fill="#121212" stroke="#888" stroke-width="2" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Back Profile View -->
+            <div id="box-back" class="view-box">
+                <div class="view-title">ROLL (Left/Right)</div>
+                <div class="graphic-container">
+                    <svg id="suv-back" viewBox="0 0 70 70" style="width: 75px;">
+                        <line x1="20" y1="13" x2="50" y2="13" stroke="#777" stroke-width="2" />
+                        <line x1="23" y1="13" x2="23" y2="16" stroke="#777" stroke-width="1" />
+                        <line x1="47" y1="13" x2="47" y2="16" stroke="#777" stroke-width="1" />
+                        <path d="M15,50 L55,50 L52,24 L45,16 L25,16 L18,24 Z" fill="#ffffff" />
+                        <path d="M21,22 L49,22 L45,18 L25,18 Z" fill="#262626" />
+                        <rect x="16" y="50" width="8" height="10" fill="#121212" rx="2" />
+                        <rect x="46" y="50" width="8" height="10" fill="#121212" rx="2" />
+                        <line x1="24" y1="55" x2="46" y2="55" stroke="#121212" stroke-width="4" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Telemetry Numbers -->
+        <div class="readouts">
+            <div class="data-point">
+                <div class="data-label">Pitch (X)</div>
+                <div class="data-value" id="val-x">0.0°</div>
+            </div>
+            <div class="data-point">
+                <div class="data-label">Roll (Y)</div>
+                <div class="data-value" id="val-y">0.0°</div>
+            </div>
+            <div class="data-point">
+                <div class="data-label">Yaw (Z)</div>
+                <div class="data-value" id="val-z">0.0°</div>
+            </div>
+        </div>
+
+        <!-- Action Button Controls -->
+        <div class="controls">
+            <button class="btn-calibrate" id="btn-zero">Set Zero Offset</button>
+        </div>
+
+        <div class="status" id="status-message">Awaiting secure sensor initialization...</div>
+    </div>
+
+    <script>
+        const suvSide = document.getElementById('suv-side');
+        const suvBack = document.getElementById('suv-back');
+        const boxSide = document.getElementById('box-side');
+        const boxBack = document.getElementById('box-back');
+        const valX = document.getElementById('val-x');
+        const valY = document.getElementById('val-y');
+        const valZ = document.getElementById('val-z');
+        const btnZero = document.getElementById('btn-zero');
+        const statusEl = document.getElementById('status-message');
+
+        // Safety thresholds configuration
+        const LIMIT_ANGLE = 30.0;
+
+        // Active sensor readings vs Calibration offsets
+        let rawPitch = 0, rawRoll = 0, rawYaw = 0;
+        let offsetPitch = 0, offsetRoll = 0, offsetYaw = 0;
+
+        function handleOrientation(event) {
+            if (event.beta === null || event.gamma === null) return;
+
+            // Retain raw physical positions
+            rawPitch = event.beta;
+            rawRoll = event.gamma;
+            rawYaw = event.alpha !== null ? event.alpha : 0;
+
+            // Compute calibrated output calculation relative to fixed offset point
+            let pitch = rawPitch - offsetPitch;
+            let roll = rawRoll - offsetRoll;
+            let yaw = rawYaw - offsetYaw;
+
+            // Enforce proper boundaries wrapping
+            if (pitch > 180) pitch -= 360;
+            if (pitch < -180) pitch += 360;
+            if (roll > 90) roll -= 180;
+            if (roll < -90) roll += 180;
+
+            // Visual layout update loops
+            valX.textContent = `${pitch.toFixed(1)}°`;
+            valY.textContent = `${roll.toFixed(1)}°`;
+            valZ.textContent = `${yaw.toFixed(1)}°`;
+
+            suvSide.style.transform = `rotate(${-pitch}deg)`;
+            suvBack.style.transform = `rotate(${roll}deg)`;
+
+            // Check Safety Conditions
+            const isPitchDangerous = Math.abs(pitch) >= LIMIT_ANGLE;
+            const isRollDangerous = Math.abs(roll) >= LIMIT_ANGLE;
+
+            if (isPitchDangerous) {
+                boxSide.classList.add('warning');
+                valX.classList.add('danger');
+            } else {
+                boxSide.classList.remove('warning');
+                valX.classList.remove('danger');
+            }
+
+            if (isRollDangerous) {
+                boxBack.classList.add('warning');
+                valY.classList.add('danger');
+            } else {
+                boxBack.classList.remove('warning');
+                valY.classList.remove('danger');
+            }
+
+            statusEl.textContent = "Live calibrated tracking active.";
+            statusEl.style.color = "#4caf50";
+        }
+
+        // Tap handler locks in current sensor parameters as reference zero baseline
+        btnZero.addEventListener('click', () => {
+            offsetPitch = rawPitch;
+            offsetRoll = rawRoll;
+            offsetYaw = rawYaw;
+            
+            statusEl.textContent = "Offsets calibrated to current position successfully.";
+            statusEl.style.color = "#2196f3";
+            setTimeout(() => {
+                statusEl.textContent = "Live calibrated tracking active.";
+                statusEl.style.color = "#4caf50";
+            }, 2000);
+        });
+
+        if (window.DeviceOrientationEvent) {
+            window.addEventListener('deviceorientation', handleOrientation, true);
+        } else {
+            statusEl.textContent = "Hardware sensors unavailable or unsupported.";
+            statusEl.style.color = "#ff5252";
+        }
+    </script>
+</body>
+</html>
